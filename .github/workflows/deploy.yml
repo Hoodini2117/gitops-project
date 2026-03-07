@@ -44,7 +44,7 @@ jobs:
           --region $AWS_REGION
           --name $CLUSTER_NAME
 
-        name: deploy to k8s
+      - name: deploy to k8s
         run: |
           kubectl apply -f k8s/
 
