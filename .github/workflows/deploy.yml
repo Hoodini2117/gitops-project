@@ -2,7 +2,7 @@ name: deploy to EKS
 on:
   push:
     branches:
-      main
+      - main
 permissions:
   id-token: write
   contents: read
@@ -50,7 +50,7 @@ jobs:
 
       - name: update kubeconfig
         run: |
-          aws eks update-kubeconfig \ 
+          aws eks update-kubeconfig \
            --region $AWS_REGION \
            --name $CLUSTER_NAME
 
