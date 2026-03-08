@@ -47,6 +47,9 @@ jobs:
       - name: Debug variables
         run: |
           echo "Cluster: $CLUSTER_NAME"
+      - name: Debug identity
+        run: aws sts get-caller-identity
+          
 
       - name: update kubeconfig
         run: |
