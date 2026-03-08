@@ -44,6 +44,10 @@ jobs:
         run: |
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest
 
+      - name: Debug variables
+        run: |
+          echo "Cluster: $CLUSTER_NAME"
+
       - name: update kubeconfig
         run: |
           aws eks update-kubeconfig \ 
