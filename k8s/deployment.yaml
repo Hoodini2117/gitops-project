@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: gitops-app
-        image: 797795454214.dkr.ecr.us-east-1.amazonaws.com/gitops-app:latest
+        image: 797795454214.dkr.ecr.us-east-1.amazonaws.com/gitops-app:IMAGE_TAG
         ports:
         - containerPort: 3000
         resources:
