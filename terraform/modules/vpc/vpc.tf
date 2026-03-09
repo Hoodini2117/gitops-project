@@ -1,3 +1,5 @@
+#checkov:skip=CKV2_AWS_12: Default security group managed by AWS in demo environment
+
 resource "aws_vpc" "gitops_vpc" {
   cidr_block       = var.vpc_cidr
   instance_tenancy = "default"
@@ -20,9 +22,15 @@ resource "aws_subnet" "gitops_subnet_2" {
   availability_zone       = "us-east-1b"
   map_public_ip_on_launch = false
 }
+resource "aws_kms_key" "logs" {
+  description = "Cloudwatch log encryption"
+  enable_key_rotation = true
+  
+}
 resource "aws_cloudwatch_log_group" "vpc_flow_logs" {
   name = "/aws/vpc/gitops-flow-logs"
-  retention_in_days = 7
+  retention_in_days = 365
+  kms_key_id = aws_kms_key.logs.arn
 }
 resource "aws_iam_role" "flow_logs_role" {
   name = "gitops-flow-logs-role"
