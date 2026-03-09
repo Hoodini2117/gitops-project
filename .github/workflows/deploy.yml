@@ -10,6 +10,7 @@ env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: gitops-app
   CLUSTER_NAME: gitops-cluster
+  IMAGE_TAG: ${{ github.sha }}
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -33,11 +34,11 @@ jobs:
 
       - name: build docker images
         run: |
-          docker build -t $ECR_REPOSITORY ./app
+          docker build -t $ECR_REPOSITORY:$IMAGE_TAG ./app
 
       - name: tag image
         run: |
-          docker tag $ECR_REPOSITORY:latest \
+          docker tag $ECR_REPOSITORY:$IMAGE_TAG \
           ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest
 
       - name: Scan Docker image with Trivy
@@ -50,7 +51,7 @@ jobs:
 
       - name: push job
         run: |
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Debug variables
         run: |
