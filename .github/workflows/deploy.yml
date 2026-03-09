@@ -40,6 +40,14 @@ jobs:
           docker tag $ECR_REPOSITORY:latest \
           ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest
 
+      - name: Scan Docker image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: gitops-app
+          format: table
+          exit-code: 0
+          ignore-unfixed: true
+
       - name: push job
         run: |
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest
@@ -57,6 +65,11 @@ jobs:
            --region $AWS_REGION \
            --name $CLUSTER_NAME
 
+      - name: Terraform security scan
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: terraform
+      
       - name: deploy to k8s
         run: |
           kubectl apply -f k8s/
