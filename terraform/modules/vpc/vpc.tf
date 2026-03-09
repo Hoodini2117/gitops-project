@@ -11,14 +11,38 @@ resource "aws_subnet" "gitops_subnet_1" {
   vpc_id                  = aws_vpc.gitops_vpc.id
   cidr_block              = var.subnet_1_cidr
   availability_zone       = "us-east-1a"
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = false
 }
 
 resource "aws_subnet" "gitops_subnet_2" {
   vpc_id                  = aws_vpc.gitops_vpc.id
   cidr_block              = var.subnet_2_cidr
   availability_zone       = "us-east-1b"
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = false
+}
+resource "aws_cloudwatch_log_group" "vpc_flow_logs" {
+  name = "/aws/vpc/gitops-flow-logs"
+  retention_in_days = 7
+}
+resource "aws_iam_role" "flow_logs_role" {
+  name = "gitops-flow-logs-role"
+  assume_role_policy = jsonencode({
+     Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "vpc-flow-logs.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+resource "aws_flow_log" "vpc_flow_log" {
+  iam_role_arn         = aws_iam_role.flow_logs_role.arn
+  log_destination      = aws_cloudwatch_log_group.vpc_flow_logs.arn
+  log_destination_type = "cloud-watch-logs"
+  traffic_type         = "ALL"
+  vpc_id = aws_vpc.gitops_vpc.id
 }
 
 resource "aws_internet_gateway" "gw" {
