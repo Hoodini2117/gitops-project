@@ -1,5 +1,4 @@
-#checkov:skip=CKV2_AWS_12: Default security group managed by AWS in demo environment
-
+#checkov:skip=CKV2_AWS_12 Default SG managed by AWS
 resource "aws_vpc" "gitops_vpc" {
   cidr_block       = var.vpc_cidr
   instance_tenancy = "default"

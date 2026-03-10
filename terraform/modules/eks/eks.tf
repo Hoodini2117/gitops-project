@@ -20,8 +20,8 @@ resource "aws_kms_key" "eks" {
 }
 data "aws_caller_identity" "current" {}
 
-#checkov:skip=CKV_AWS_38: Public endpoint required for GitHub Actions CI/CD access
-#checkov:skip=CKV_AWS_39: Public endpoint allowed for demo environment
+#checkov:skip=CKV_AWS_38 Public endpoint required for CI/CD
+#checkov:skip=CKV_AWS_39 Public endpoint required for GitHub Actions
 resource "aws_eks_cluster" "gitops_cluster" {
   name     = var.cluster_name
   role_arn = var.cluster_role
