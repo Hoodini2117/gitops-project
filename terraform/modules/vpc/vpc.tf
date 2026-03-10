@@ -16,14 +16,14 @@ resource "aws_subnet" "gitops_subnet_1" {
   vpc_id                  = aws_vpc.gitops_vpc.id
   cidr_block              = var.subnet_1_cidr
   availability_zone       = "us-east-1a"
-  map_public_ip_on_launch = false
+  map_public_ip_on_launch = true
 }
 
 resource "aws_subnet" "gitops_subnet_2" {
   vpc_id                  = aws_vpc.gitops_vpc.id
   cidr_block              = var.subnet_2_cidr
   availability_zone       = "us-east-1b"
-  map_public_ip_on_launch = false
+  map_public_ip_on_launch = true
 }
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
