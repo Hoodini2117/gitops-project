@@ -34,7 +34,7 @@ jobs:
 
       - name: build docker images
         run: |
-          docker build -t $ECR_REPOSITORY:latest ./app
+          docker build -t $ECR_REPOSITORY:$IMAGE_TAG ./app
 
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@master
@@ -47,12 +47,12 @@ jobs:
       - name: tag image
         run: |
           docker tag $ECR_REPOSITORY:$IMAGE_TAG \
-          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
 
 
       - name: push job
         run: |
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Debug variables
         run: |
