@@ -13,7 +13,8 @@ module "iam" {
 module "ecr" {
   source = "./modules/ecr"
 }
-
+#checkov:skip=CKV_AWS_38 Public endpoint required for CI/CD pipeline
+#checkov:skip=CKV_AWS_39 Public endpoint required for GitHub Actions
 module "eks" {
   source       = "./modules/eks"
   cluster_name = var.cluster_name
