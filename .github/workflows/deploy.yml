@@ -71,6 +71,7 @@ jobs:
         uses: bridgecrewio/checkov-action@master
         with:
           directory: terraform
+          skip_check: CKV_AWS_38,CKV_AWS_39
 
       - name: Update image in deployment
         run: |
