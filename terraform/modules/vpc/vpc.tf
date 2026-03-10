@@ -1,4 +1,3 @@
-#checkov:skip=CKV2_AWS_12 Default SG managed by AWS
 resource "aws_vpc" "gitops_vpc" {
   cidr_block       = var.vpc_cidr
   instance_tenancy = "default"
@@ -6,6 +5,11 @@ resource "aws_vpc" "gitops_vpc" {
   tags = {
     Name = "gitops_vpc"
   }
+}
+resource "aws_default_security_group" "default" {
+  vpc_id = aws_vpc.gitops_vpc.id
+  ingress = []
+  egress = []
 }
 
 resource "aws_subnet" "gitops_subnet_1" {
