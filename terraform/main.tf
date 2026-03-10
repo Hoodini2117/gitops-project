@@ -1,3 +1,4 @@
+#checkov:skip=CKV_AWS_130 Public subnet required for EKS worker nodes
 module "vpc" {
   source = "./modules/vpc"
 
