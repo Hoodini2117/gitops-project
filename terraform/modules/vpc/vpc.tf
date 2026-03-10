@@ -22,10 +22,41 @@ resource "aws_subnet" "gitops_subnet_2" {
   availability_zone       = "us-east-1b"
   map_public_ip_on_launch = false
 }
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
 resource "aws_kms_key" "logs" {
-  description = "Cloudwatch log encryption"
+  description         = "CloudWatch logs encryption"
   enable_key_rotation = true
-  
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+
+      {
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        }
+        Action   = "kms:*"
+        Resource = "*"
+      },
+
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "logs.${data.aws_region.current.id}.amazonaws.com"    
+       }
+        Action = [
+          "kms:Encrypt",
+          "kms:Decrypt",
+          "kms:GenerateDataKey",
+          "kms:DescribeKey"
+        ]
+        Resource = "*"
+      }
+
+    ]
+  })
 }
 resource "aws_cloudwatch_log_group" "vpc_flow_logs" {
   name = "/aws/vpc/gitops-flow-logs"

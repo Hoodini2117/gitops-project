@@ -1,25 +1,31 @@
+
 resource "aws_kms_key" "eks" {
-  description = "EKS secrets encryption"
+  description         = "EKS secrets encryption"
   enable_key_rotation = true
+
   policy = jsonencode({
-    version = "2012-10-17"
+    Version = "2012-10-17"
     Statement = [
       {
+        Sid = "EnableRootPermissions"
         Effect = "Allow"
         Principal = {
-          AWS = "*"
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
         }
-        Action = "kms:*"
+        Action   = "kms:*"
         Resource = "*"
       }
     ]
   })
 }
+data "aws_caller_identity" "current" {}
+
 #checkov:skip=CKV_AWS_38: Public endpoint required for GitHub Actions CI/CD access
 #checkov:skip=CKV_AWS_39: Public endpoint allowed for demo environment
 resource "aws_eks_cluster" "gitops_cluster" {
   name     = var.cluster_name
   role_arn = var.cluster_role
+
   enabled_cluster_log_types = [
     "api",
     "audit",
@@ -27,8 +33,10 @@ resource "aws_eks_cluster" "gitops_cluster" {
     "controllerManager",
     "scheduler"
   ]
+
   encryption_config {
     resources = ["secrets"]
+
     provider {
       key_arn = aws_kms_key.eks.arn
     }
@@ -36,8 +44,12 @@ resource "aws_eks_cluster" "gitops_cluster" {
 
   vpc_config {
     subnet_ids = var.subnet_ids
+
+    endpoint_public_access  = true
+    endpoint_private_access = true
   }
 }
+
 resource "aws_eks_node_group" "gitops_nodes" {
   cluster_name    = aws_eks_cluster.gitops_cluster.name
   node_group_name = "gitops-nodes"
