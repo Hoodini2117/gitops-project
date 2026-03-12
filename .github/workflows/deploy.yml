@@ -34,7 +34,10 @@ jobs:
 
       - name: build docker images
         run: |
-          docker build -t $ECR_REPOSITORY:$IMAGE_TAG ./app
+          IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY
+
+          docker build -t $IMAGE_URI:$IMAGE_TAG ./app
+          docker tag $IMAGE_URI:$IMAGE_TAG $IMAGE_URI:latest
 
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@master
@@ -52,8 +55,10 @@ jobs:
 
       - name: push job
         run: |
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+          IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY
 
+          docker push $IMAGE_URI:$IMAGE_TAG
+          docker push $IMAGE_URI:latest
       - name: Debug variables
         run: |
           echo "Cluster: $CLUSTER_NAME"
