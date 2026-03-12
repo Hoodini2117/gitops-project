@@ -14,13 +14,15 @@ env:
   ECR_REPOSITORY: gitops-app
   CLUSTER_NAME: gitops-cluster
   IMAGE_TAG: ${{ github.sha }}
-  IMAGE_URI: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Set IMAGE_URI
+        run: |
+          echo "IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}" >> $GITHUB_ENV
       - name: Checkout code
         uses: actions/checkout@v4
 
