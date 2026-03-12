@@ -1,19 +1,25 @@
 name: deploy to EKS
+
 on:
   push:
     branches:
       - main
+
 permissions:
   id-token: write
   contents: read
+
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: gitops-app
   CLUSTER_NAME: gitops-cluster
   IMAGE_TAG: ${{ github.sha }}
+  IMAGE_URI: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,64 +32,33 @@ jobs:
 
       - name: Login to amazon ecr
         run: |
-         aws ecr get-login-password \
-         --region $AWS_REGION \
+          aws ecr get-login-password \
+          --region $AWS_REGION \
           | docker login \
-         --username AWS \
-         --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com
+          --username AWS \
+          --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com
 
-      - name: build docker images
+      - name: Build docker image
         run: |
-          IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY
-
           docker build -t $IMAGE_URI:$IMAGE_TAG ./app
-          docker tag $IMAGE_URI:$IMAGE_TAG $IMAGE_URI:latest
 
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          image-ref: ${{ env.IMAGE_URI }}:${{ env.IMAGE_TAG }}
           format: table
           exit-code: 0
           ignore-unfixed: true
 
-      - name: tag image
+      - name: Push image
         run: |
-          docker tag $ECR_REPOSITORY:$IMAGE_TAG \
-          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
-
-
-      - name: push job
-        run: |
-          IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY
-
           docker push $IMAGE_URI:$IMAGE_TAG
-          docker push $IMAGE_URI:latest
-      - name: Debug variables
-        run: |
-          echo "Cluster: $CLUSTER_NAME"
+
       - name: Debug identity
         run: aws sts get-caller-identity
-          
-
-      - name: update kubeconfig
-        run: |
-          aws eks update-kubeconfig \
-           --region $AWS_REGION \
-           --name $CLUSTER_NAME
 
       - name: Terraform security scan
         uses: bridgecrewio/checkov-action@master
         with:
           directory: terraform
           skip_check: CKV_AWS_38,CKV_AWS_39,CKV_AWS_130
-
-      - name: Update image in deployment
-        run: |
-           sed -i "s|IMAGE_TAG|${IMAGE_TAG}|g" k8s/deployment.yaml
-      - name: deploy to k8s
-        run: |
-          kubectl apply -f k8s/
-
-
-
