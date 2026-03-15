@@ -22,7 +22,7 @@ jobs:
     steps:
       - name: Set IMAGE_URI
         run: |
-          echo "IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}" >> $GITHUB_ENV
+                 echo "IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}" >> $GITHUB_ENV
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -42,7 +42,7 @@ jobs:
 
       - name: Build docker image
         run: |
-          docker build -t $IMAGE_URI:$IMAGE_TAG -t $IMAGE_URI:latest ./app
+          docker build -t $IMAGE_URI:$IMAGE_TAG ./app
 
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@master
@@ -55,7 +55,6 @@ jobs:
       - name: Push image
         run: |
           docker push $IMAGE_URI:$IMAGE_TAG
-          docker push $IMAGE_TAG:latest
 
       - name: Debug identity
         run: aws sts get-caller-identity
